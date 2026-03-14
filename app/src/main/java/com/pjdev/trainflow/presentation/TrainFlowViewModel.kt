@@ -27,7 +27,10 @@ data class AppUiState(
     val currentDayOfWeek: Int = LocalDate.now().dayOfWeek.value
 )
 
-class TrainFlowViewModel(private val repository: TrainFlowRepository) : ViewModel() {
+class TrainFlowViewModel(
+    private val repository: TrainFlowRepository
+) : ViewModel() {
+
     val uiState: StateFlow<AppUiState> = combine(
         repository.weeklyPlanFlow,
         repository.sessionsFlow,
@@ -35,23 +38,48 @@ class TrainFlowViewModel(private val repository: TrainFlowRepository) : ViewMode
         repository.latestResultByExerciseNameFlow()
     ) { plan, sessions, settings, latest ->
         AppUiState(plan, sessions, settings, latest)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AppUiState())
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        AppUiState()
+    )
 
     val activeWorkoutDay = MutableStateFlow<Int?>(null)
 
     init {
-        viewModelScope.launch { repository.ensureSeeded() }
+        viewModelScope.launch {
+            repository.ensureSeeded()
+        }
     }
 
-    fun setActiveWorkoutDay(day: Int?) { activeWorkoutDay.value = day }
-
-    fun saveDay(day: DayWorkout) = viewModelScope.launch { repository.saveDay(day) }
-
-    fun deleteExercise(dayOfWeek: Int, exerciseId: String) = viewModelScope.launch {
-        repository.deleteExercise(dayOfWeek, exerciseId)
+    fun setActiveWorkoutDay(day: Int?) {
+        activeWorkoutDay.value = day
     }
 
-    fun saveExercise(dayOfWeek: Int, existingId: String?, name: String, sets: Int, repsTarget: String, restSeconds: Int, trackingType: TrackingType) = viewModelScope.launch {
+    fun saveDay(day: DayWorkout) =
+        viewModelScope.launch {
+            repository.saveDay(day)
+        }
+
+    fun deleteExercise(dayOfWeek: Int, exerciseId: String) =
+        viewModelScope.launch {
+            repository.deleteExercise(dayOfWeek, exerciseId)
+        }
+
+    /**
+     * Crear o editar ejercicio
+     */
+    fun saveExercise(
+        dayOfWeek: Int,
+        existingId: String?,
+        name: String,
+        sets: Int,
+        repsTarget: String,
+        workSeconds: Int,
+        restSeconds: Int,
+        trackingType: TrackingType
+    ) = viewModelScope.launch {
+
         repository.saveExercise(
             dayOfWeek,
             Exercise(
@@ -59,16 +87,28 @@ class TrainFlowViewModel(private val repository: TrainFlowRepository) : ViewMode
                 name = name,
                 sets = sets,
                 repsTarget = repsTarget,
+                workSeconds = workSeconds,
                 restSeconds = restSeconds,
                 trackingType = trackingType
             )
         )
     }
 
-    fun saveSession(dayOfWeek: Int?, workoutName: String, results: List<ExerciseResult>) = viewModelScope.launch {
+    fun saveSession(
+        dayOfWeek: Int?,
+        workoutName: String,
+        results: List<ExerciseResult>
+    ) = viewModelScope.launch {
         repository.createSession(dayOfWeek, workoutName, results)
     }
 
-    fun updateSound(enabled: Boolean) = viewModelScope.launch { repository.updateSettings(soundEnabled = enabled) }
-    fun updateVibration(enabled: Boolean) = viewModelScope.launch { repository.updateSettings(vibrationEnabled = enabled) }
+    fun updateSound(enabled: Boolean) =
+        viewModelScope.launch {
+            repository.updateSettings(soundEnabled = enabled)
+        }
+
+    fun updateVibration(enabled: Boolean) =
+        viewModelScope.launch {
+            repository.updateSettings(vibrationEnabled = enabled)
+        }
 }

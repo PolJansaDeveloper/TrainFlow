@@ -89,6 +89,7 @@ class TrainFlowDataStore(private val context: Context) {
                                 put("name", exercise.name)
                                 put("sets", exercise.sets)
                                 put("repsTarget", exercise.repsTarget)
+                                put("workSeconds", exercise.workSeconds)
                                 put("restSeconds", exercise.restSeconds)
                                 put("trackingType", exercise.trackingType.key)
                             })
@@ -119,8 +120,11 @@ class TrainFlowDataStore(private val context: Context) {
                                 name = ex.optString("name"),
                                 sets = ex.optInt("sets", 3),
                                 repsTarget = ex.optString("repsTarget", "10"),
+                                workSeconds = ex.optInt("workSeconds", 40),
                                 restSeconds = ex.optInt("restSeconds", 60),
-                                trackingType = TrackingType.fromKey(ex.optString("trackingType", TrackingType.RepsOnly.key))
+                                trackingType = TrackingType.fromKey(
+                                    ex.optString("trackingType", TrackingType.RepsOnly.key)
+                                )
                             )
                         }
                     } ?: emptyList()
@@ -176,21 +180,31 @@ class TrainFlowDataStore(private val context: Context) {
     }
 
     private fun demoWeeklyPlan(): WeeklyPlan {
+
         val strength = listOf(
-            Exercise("ex_push_ups", "Push Ups", 4, "10", 90, TrackingType.RepsOnly),
-            Exercise("ex_squat", "Squat", 4, "12", 90, TrackingType.RepsOnly)
+            Exercise("ex_push_ups", "Push Ups", 4, "10", 40, 90, TrackingType.RepsOnly),
+            Exercise("ex_squat", "Squat", 4, "12", 40, 90, TrackingType.RepsOnly)
         )
+
         val cardio = listOf(
-            Exercise("ex_running_intervals", "Running Intervals", 6, "60 sec", 60, TrackingType.TimeOnly)
+            Exercise("ex_running_intervals", "Running Intervals", 6, "60 sec", 60, 60, TrackingType.TimeOnly)
         )
+
         val mobility = listOf(
-            Exercise("ex_stretch_flow", "Stretch Flow", 3, "45 sec", 30, TrackingType.TimeOnly)
+            Exercise("ex_stretch_flow", "Stretch Flow", 3, "45 sec", 45, 30, TrackingType.TimeOnly)
         )
-        val workouts = mapOf(1 to ("Strength" to strength), 3 to ("Cardio" to cardio), 5 to ("Mobility" to mobility))
+
+        val workouts = mapOf(
+            1 to ("Strength" to strength),
+            3 to ("Cardio" to cardio),
+            5 to ("Mobility" to mobility)
+        )
+
         return WeeklyPlan(
             days = (1..7).map { day ->
-                workouts[day]?.let { (name, ex) -> DayWorkout(day, name, false, ex) }
-                    ?: DayWorkout(day, "", true, emptyList())
+                workouts[day]?.let { (name, ex) ->
+                    DayWorkout(day, name, false, ex)
+                } ?: DayWorkout(day, "", true, emptyList())
             }
         )
     }

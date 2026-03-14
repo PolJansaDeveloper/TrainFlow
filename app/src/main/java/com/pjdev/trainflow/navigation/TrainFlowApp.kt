@@ -52,8 +52,17 @@ fun TrainFlowApp(viewModel: TrainFlowViewModel) {
 
         is AppRoute.EditExercise -> ExerciseEditorScreen(
             exercise = dayBy(current.dayOfWeek).exercises.firstOrNull { it.id == current.exerciseId },
-            onSave = { name, sets, reps, rest, tracking ->
-                viewModel.saveExercise(current.dayOfWeek, current.exerciseId, name, sets, reps, rest, tracking)
+            onSave ={ name, sets, reps, work, rest, tracking ->
+                viewModel.saveExercise(
+                    current.dayOfWeek,
+                    current.exerciseId,
+                    name,
+                    sets,
+                    reps,
+                    work,
+                    rest,
+                    tracking
+                )
                 route = AppRoute.EditDay(current.dayOfWeek)
             },
             onBack = { route = AppRoute.EditDay(current.dayOfWeek) }
