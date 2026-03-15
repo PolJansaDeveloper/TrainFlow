@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 
@@ -23,30 +22,27 @@ fun GradientBorderCard(
 
     val borderBrush = Brush.linearGradient(
         colors = listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.tertiary
+            MaterialTheme.colorScheme.secondary,
+            MaterialTheme.colorScheme.primary
         )
     )
 
     val glowBrush = Brush.linearGradient(
         colors = listOf(
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
-            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.18f)
+            MaterialTheme.colorScheme.secondary.copy(alpha = 0.16f),
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
         )
     )
 
     Box(modifier = modifier) {
-
-        // glow exterior
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .clip(shape)
                 .background(glowBrush)
-                .blur(14.dp)
+                .blur(12.dp)
         )
 
-        // borde real
         Box(
             modifier = Modifier
                 .background(
@@ -59,9 +55,9 @@ fun GradientBorderCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(21.dp),
                 colors = CardDefaults.elevatedCardColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f)
                 ),
-                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
             ) {
                 content()
             }

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.Button
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pjdev.trainflow.domain.model.DayWorkout
 import com.pjdev.trainflow.domain.model.toReadableDuration
 import com.pjdev.trainflow.ui.components.common.dayLabels
@@ -90,16 +92,22 @@ fun HomeHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    painter = painterResource(R.drawable.trainflow_nike_minimal_brutal_fire_dumbbell),
+                    contentDescription = null,
+                    tint = Color.Unspecified
+                )
 
                 Text(
                     text = "TrainFlow",
+                    letterSpacing = 0.5.sp,
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.ExtraBold,
                         brush = Brush.linearGradient(
                             colors = listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.tertiary
+                                MaterialTheme.colorScheme.secondary,
+                                MaterialTheme.colorScheme.primary
                             )
                         )
                     )
@@ -132,23 +140,21 @@ private fun TopActionIcon(
     contentDescription: String,
     onClick: () -> Unit
 ) {
-
     val gradient = Brush.linearGradient(
         colors = listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.tertiary
+            MaterialTheme.colorScheme.secondary,
+            MaterialTheme.colorScheme.primary
         )
     )
 
     Surface(
-        modifier = Modifier.size(44.dp),
+        modifier = Modifier.size(46.dp),
         shape = CircleShape,
         color = Color.Transparent,
         tonalElevation = 4.dp,
         shadowElevation = 6.dp,
         onClick = onClick
     ) {
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -156,10 +162,9 @@ private fun TopActionIcon(
                     brush = gradient,
                     shape = CircleShape
                 )
-                .padding(2.dp),   // grosor del borde
+                .padding(2.dp),
             contentAlignment = Alignment.Center
         ) {
-
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -169,10 +174,10 @@ private fun TopActionIcon(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-
                 Icon(
                     imageVector = icon,
                     contentDescription = contentDescription,
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
@@ -204,8 +209,8 @@ private fun ActiveWorkoutCard(
 ) {
     val gradient = Brush.linearGradient(
         colors = listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.tertiary
+            MaterialTheme.colorScheme.secondary,
+            MaterialTheme.colorScheme.primary
         )
     )
     val onGradient = MaterialTheme.colorScheme.onPrimary
@@ -238,8 +243,7 @@ private fun ActiveWorkoutCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.LocalFireDepartment,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary
+                        contentDescription = null
                     )
                 }
 
@@ -260,7 +264,7 @@ private fun ActiveWorkoutCard(
             }
 
             Text(
-                text = "${day.exercises.size} exercises planned for today. Stay sharp and train with intent.",
+                text = "${day.exercises.size} exercises planned for today.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = onGradient.copy(alpha = 0.94f)
             )
@@ -282,7 +286,13 @@ private fun ActiveWorkoutCard(
                     Text(
                         text = "Start workout",
                         style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.ExtraBold,
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.secondary,
+                                    MaterialTheme.colorScheme.primary
+                                )
+                            )
                         )
                     )
                 }
@@ -295,8 +305,8 @@ private fun ActiveWorkoutCard(
 private fun RestDayCard() {
     val recoveryBackground = Brush.linearGradient(
         colors = listOf(
-            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.30f),
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+            MaterialTheme.colorScheme.secondary.copy(alpha = 0.06f),
+            MaterialTheme.colorScheme.surface
         )
     )
 
@@ -347,37 +357,10 @@ private fun RestDayCard() {
             }
 
             Text(
-                text = "Recovery also builds progress. Use today to recharge and come back stronger.",
+                text = "Recovery also builds progress.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
-            GradientBorderCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.tertiary.copy(alpha = 0.08f),
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
-                                )
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Rest day",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
         }
     }
 }
