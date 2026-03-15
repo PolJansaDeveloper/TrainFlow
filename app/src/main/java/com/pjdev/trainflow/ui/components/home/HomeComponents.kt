@@ -16,17 +16,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Balance
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -43,38 +39,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pjdev.trainflow.domain.model.DayWorkout
 import com.pjdev.trainflow.domain.model.toReadableDuration
-import com.pjdev.trainflow.ui.components.common.dayLabels
 
-@Composable
-private fun workoutGradient(day: DayWorkout): Brush {
-    return if (day.isRestDay) {
-        Brush.linearGradient(
-            colors = listOf(
-                MaterialTheme.colorScheme.surfaceVariant,
-                MaterialTheme.colorScheme.outline.copy(alpha = 0.85f)
-            )
-        )
-    } else {
-        Brush.linearGradient(
-            colors = listOf(
-                MaterialTheme.colorScheme.primary,
-                MaterialTheme.colorScheme.tertiary
-            )
-        )
-    }
-}
 
 @Composable
 fun HomeHeader(
-    currentDayOfWeek: Int,
     onHistory: () -> Unit,
     onSettings: () -> Unit
 ) {
@@ -262,12 +235,6 @@ private fun ActiveWorkoutCard(
                     )
                 }
             }
-
-            Text(
-                text = "${day.exercises.size} exercises planned for today.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = onGradient.copy(alpha = 0.94f)
-            )
 
             GradientBorderCard(
                 modifier = Modifier.fillMaxWidth()

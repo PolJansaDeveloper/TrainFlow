@@ -1,32 +1,35 @@
 package com.pjdev.trainflow.ui.components.planner
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pjdev.trainflow.domain.model.DayWorkout
 import com.pjdev.trainflow.ui.components.common.dayLabels
@@ -52,30 +55,55 @@ private fun restChipContent() = MaterialTheme.colorScheme.onSurfaceVariant
 private fun workoutChipContent() = MaterialTheme.colorScheme.onTertiaryContainer
 
 @Composable
-fun PlannerHeader(onBack: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        TextButton(
+fun PlannerHeader(
+    title: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null
+) {
+    BackHandler(onBack = onBack)
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Surface(
+            modifier = Modifier.size(30.dp),
             onClick = onBack,
-            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp)
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
+            tonalElevation = 2.dp,
+            shadowElevation = 6.dp
+
         ) {
-            Text(
-                text = "← Back",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
+
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Go back",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp)
+                )
+
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
             Text(
-                text = "Week Planner",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground
+                text = title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
-            Text(
-                text = "Organize your training week and keep every session under control.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -109,7 +137,8 @@ fun WeeklySummaryCard(days: List<DayWorkout>) {
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                Alignment.CenterVertically
             ) {
                 SummaryMiniCard(
                     modifier = Modifier.weight(1f),
@@ -119,12 +148,12 @@ fun WeeklySummaryCard(days: List<DayWorkout>) {
                 SummaryMiniCard(
                     modifier = Modifier.weight(1f),
                     value = restDays.toString(),
-                    label = "Recovery"
+                    label = "Recovery days"
                 )
                 SummaryMiniCard(
                     modifier = Modifier.weight(1f),
                     value = totalExercises.toString(),
-                    label = "Exercises"
+                    label = "Training hours"
                 )
             }
         }
@@ -144,7 +173,8 @@ private fun SummaryMiniCard(
             .clip(RoundedCornerShape(18.dp))
             .background(onPrimary.copy(alpha = 0.14f))
             .padding(vertical = 14.dp, horizontal = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        Alignment.CenterHorizontally
     ) {
         Text(
             text = value,
@@ -155,7 +185,8 @@ private fun SummaryMiniCard(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = onPrimary.copy(alpha = 0.9f)
+            color = onPrimary.copy(alpha = 0.9f),
+            textAlign = TextAlign.Center
         )
     }
 }

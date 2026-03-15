@@ -58,7 +58,6 @@ fun HomeScreen(
             ) {
                 item {
                     HomeHeader(
-                        currentDayOfWeek = currentDayOfWeek,
                         onHistory = onHistory,
                         onSettings = onSettings
                     )

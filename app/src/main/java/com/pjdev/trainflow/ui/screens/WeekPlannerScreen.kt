@@ -42,7 +42,11 @@ fun WeekPlannerScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 item {
-                    PlannerHeader(onBack = onBack)
+                    PlannerHeader(
+                        onBack = onBack,
+                        title = "Week PLanner",
+                        subtitle = "Organize your training week and keep every session under control."
+                    )
                 }
 
                 item {
