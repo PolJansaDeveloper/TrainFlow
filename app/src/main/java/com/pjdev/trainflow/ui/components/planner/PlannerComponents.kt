@@ -1,5 +1,6 @@
 package com.pjdev.trainflow.ui.components.planner
 
+import GradientBorderCard
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -27,11 +28,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pjdev.trainflow.domain.model.DayWorkout
+import com.pjdev.trainflow.domain.model.secondsToHoursMinutes
 import com.pjdev.trainflow.ui.components.common.dayLabels
 import com.pjdev.trainflow.ui.components.common.infoGradient
 
@@ -42,7 +45,7 @@ private fun restAccentColor() = MaterialTheme.colorScheme.outline
 private fun workoutAccentColor() = MaterialTheme.colorScheme.tertiary
 
 @Composable
-private fun restChipBackground() = MaterialTheme.colorScheme.surfaceVariant
+private fun restChipBackground() = Color.Green.copy(alpha = 0.4f)
 
 @Composable
 private fun workoutChipBackground() =
@@ -112,8 +115,13 @@ fun PlannerHeader(
 fun WeeklySummaryCard(days: List<DayWorkout>) {
     val trainingDays = days.count { !it.isRestDay }
     val restDays = days.count { it.isRestDay }
-    val totalExercises = days.filterNot { it.isRestDay }.sumOf { it.exercises.size }
-    val gradient = infoGradient()
+    val totalExercises = days.filterNot { it.isRestDay }.sumOf { it.totalWorkoutSeconds()}
+    val totalTrainingTime = totalExercises.secondsToHoursMinutes()
+    val gradient = Brush.linearGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.secondary,
+            MaterialTheme.colorScheme.primary
+        ))
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -152,7 +160,7 @@ fun WeeklySummaryCard(days: List<DayWorkout>) {
                 )
                 SummaryMiniCard(
                     modifier = Modifier.weight(1f),
-                    value = totalExercises.toString(),
+                    value = totalTrainingTime,
                     label = "Training hours"
                 )
             }
@@ -202,14 +210,15 @@ fun PlannerDayCard(
     } else {
         workoutAccentColor()
     }
+    val borderBrush = Brush.linearGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.secondary,
+            MaterialTheme.colorScheme.primary
+        )
+    )
 
-    ElevatedCard(
+    GradientBorderCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f)
-        ),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -270,7 +279,7 @@ fun PlannerDayCard(
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         )
                     ) {
-                        Text("Open")
+                        Text("Train")
                     }
                 }
 
@@ -278,9 +287,9 @@ fun PlannerDayCard(
                     onClick = onEdit,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    border = BorderStroke(1.dp, borderBrush)
                 ) {
-                    Text("Edit")
+                        Text("Edit training")
                 }
             }
         }

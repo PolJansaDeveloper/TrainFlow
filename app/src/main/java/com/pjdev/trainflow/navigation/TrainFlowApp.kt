@@ -14,16 +14,21 @@ import com.pjdev.trainflow.ui.screens.HistoryScreen
 import com.pjdev.trainflow.ui.screens.HomeScreen
 import com.pjdev.trainflow.ui.screens.SettingsScreen
 import com.pjdev.trainflow.ui.screens.WeekPlannerScreen
-import com.pjdev.trainflow.ui.screens.WorkoutPreviewScreen
+import com.pjdev.trainflow.ui.screens.WorkoutRunningScreen
 import com.pjdev.trainflow.ui.screens.WorkoutSummaryScreen
+import com.pjdev.trainflow.ui.session.WorkoutRunningViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+
+
 
 @Composable
 fun TrainFlowApp(viewModel: TrainFlowViewModel) {
     val state by viewModel.uiState.collectAsState()
     var route: AppRoute by remember { mutableStateOf(AppRoute.Home) }
 
-    fun dayBy(dayOfWeek: Int): DayWorkout = state.plan.days.firstOrNull { it.dayOfWeek == dayOfWeek }
-        ?: DayWorkout(dayOfWeek, "", true)
+    fun dayBy(dayOfWeek: Int): DayWorkout =
+        state.plan.days.firstOrNull { it.dayOfWeek == dayOfWeek }
+            ?: DayWorkout(dayOfWeek, "", true)
 
     when (val current = route) {
         AppRoute.Home -> HomeScreen(
@@ -44,7 +49,10 @@ fun TrainFlowApp(viewModel: TrainFlowViewModel) {
 
         is AppRoute.EditDay -> EditDayWorkoutScreen(
             day = dayBy(current.dayOfWeek),
-            onSave = { viewModel.saveDay(it); route = AppRoute.WeekPlanner },
+            onSave = {
+                viewModel.saveDay(it)
+                route = AppRoute.WeekPlanner
+            },
             onEditExercise = { route = AppRoute.EditExercise(current.dayOfWeek, it) },
             onDeleteExercise = { viewModel.deleteExercise(current.dayOfWeek, it) },
             onBack = { route = AppRoute.WeekPlanner }
@@ -52,7 +60,7 @@ fun TrainFlowApp(viewModel: TrainFlowViewModel) {
 
         is AppRoute.EditExercise -> ExerciseEditorScreen(
             exercise = dayBy(current.dayOfWeek).exercises.firstOrNull { it.id == current.exerciseId },
-            onSave ={ name, sets, reps, work, rest, tracking ->
+            onSave = { name, sets, reps, work, rest, tracking ->
                 viewModel.saveExercise(
                     current.dayOfWeek,
                     current.exerciseId,
@@ -68,23 +76,42 @@ fun TrainFlowApp(viewModel: TrainFlowViewModel) {
             onBack = { route = AppRoute.EditDay(current.dayOfWeek) }
         )
 
-        is AppRoute.WorkoutPreview -> WorkoutPreviewScreen(
-            day = dayBy(current.dayOfWeek),
-            latestResults = state.latestResults,
-            onSummary = { route = AppRoute.WorkoutSummary(current.dayOfWeek) },
-            onBack = { route = AppRoute.WeekPlanner }
-        )
+        is AppRoute.WorkoutPreview -> {
+            val workoutViewModel: WorkoutRunningViewModel = viewModel()
+            val uiState by workoutViewModel.uiState.collectAsState()
+
+            WorkoutRunningScreen(
+                day = dayBy(current.dayOfWeek),
+                uiState = uiState,
+                onStartWorkout = {
+                    workoutViewModel.startWorkout(dayBy(current.dayOfWeek))
+                },
+                onFinishWorkout = {
+                    workoutViewModel.finishWorkout()
+                    route = AppRoute.WorkoutSummary(current.dayOfWeek)
+                },
+                onBack = { route = AppRoute.WeekPlanner }
+            )
+        }
 
         is AppRoute.WorkoutSummary -> WorkoutSummaryScreen(
             day = dayBy(current.dayOfWeek),
             onSave = {
-                viewModel.saveSession(current.dayOfWeek, dayBy(current.dayOfWeek).workoutName, it)
+                viewModel.saveSession(
+                    current.dayOfWeek,
+                    dayBy(current.dayOfWeek).workoutName,
+                    it
+                )
                 route = AppRoute.History
             },
             onBack = { route = AppRoute.WorkoutPreview(current.dayOfWeek) }
         )
 
-        AppRoute.History -> HistoryScreen(sessions = state.sessions, onBack = { route = AppRoute.Home })
+        AppRoute.History -> HistoryScreen(
+            sessions = state.sessions,
+            onBack = { route = AppRoute.Home }
+        )
+
         AppRoute.Settings -> SettingsScreen(
             settings = state.settings,
             onSoundChange = viewModel::updateSound,

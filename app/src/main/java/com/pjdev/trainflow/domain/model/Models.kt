@@ -25,15 +25,12 @@ data class DayWorkout(
     val isRestDay: Boolean,
     val exercises: List<Exercise> = emptyList()
 ) {
-
-    /**
-     * Duración total del entreno en segundos
-     */
     fun totalWorkoutSeconds(): Int {
         if (isRestDay) return 0
-
         return exercises.sumOf { it.totalExerciseSeconds() }
     }
+
+    fun totalSets(): Int = exercises.sumOf { it.sets }
 }
 
 data class Exercise(
@@ -45,19 +42,19 @@ data class Exercise(
     val restSeconds: Int,
     val trackingType: TrackingType
 ) {
-
-    /**
-     * Tiempo total de este ejercicio (trabajo + descansos)
-     */
     fun totalExerciseSeconds(): Int {
-
         val totalWork = sets * workSeconds
-
-        val totalRest =
-            if (sets > 1) (sets - 1) * restSeconds
-            else 0
-
+        val totalRest = if (sets > 1) (sets - 1) * restSeconds else 0
         return totalWork + totalRest
+    }
+}
+fun Int.secondsToHoursMinutes(): String {
+    val hours = this / 3600
+    val minutes = (this % 3600) / 60
+
+    return when {
+        hours > 0 -> "${hours}h ${minutes}m"
+        else -> "${minutes}m"
     }
 }
 
@@ -82,13 +79,7 @@ data class Settings(
     val vibrationEnabled: Boolean = true
 )
 
-
-// ------------------------------------------------------------
-// Helpers de tiempo (muy útiles para UI)
-// ------------------------------------------------------------
-
 fun Int.toReadableDuration(): String {
-
     val hours = this / 3600
     val minutes = (this % 3600) / 60
     val seconds = this % 60
