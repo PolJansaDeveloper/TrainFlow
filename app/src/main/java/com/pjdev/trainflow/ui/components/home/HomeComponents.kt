@@ -1,6 +1,6 @@
 package com.pjdev.trainflow.ui.components.home
 
-import GradientBorderCard
+import com.pjdev.trainflow.ui.components.common.GradientBorderCard
 import com.pjdev.trainflow.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -212,9 +212,8 @@ private fun ActiveWorkoutCard(
     if (showWorkoutPicker) {
         WorkoutPickerDialog(
             workouts = day.workouts,
-            onDismiss = { showWorkoutPicker = false },
+            onDismiss = { },
             onSelect = { workout ->
-                showWorkoutPicker = false
                 onOpenWorkout(currentDayOfWeek, workout.id)
             }
         )
@@ -284,8 +283,6 @@ private fun ActiveWorkoutCard(
                     onClick = {
                         if (workoutCount == 1 && primaryWorkout != null) {
                             onOpenWorkout(currentDayOfWeek, primaryWorkout.id)
-                        } else {
-                            showWorkoutPicker = true
                         }
                     },
                     shape = RoundedCornerShape(21.dp),

@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -81,7 +80,6 @@ fun ExerciseEditorScreen(
                 item {
                     ExerciseEditorHeader(
                         title = if (exercise == null) "New exercise" else "Edit exercise",
-                        subtitle = "Define how this movement will be performed and tracked.",
                         onBack = onBack
                     )
                 }
@@ -247,7 +245,7 @@ fun ExerciseEditorScreen(
 @Composable
 private fun ExerciseEditorHeader(
     title: String,
-    subtitle: String,
+    subtitle: String = "Define how this movement will be performed and tracked.",
     onBack: () -> Unit
 ) {
     Row(

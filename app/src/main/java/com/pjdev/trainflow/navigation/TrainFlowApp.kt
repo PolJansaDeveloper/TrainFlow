@@ -19,7 +19,7 @@ import com.pjdev.trainflow.ui.screens.SettingsScreen
 import com.pjdev.trainflow.ui.screens.WeekPlannerScreen
 import com.pjdev.trainflow.ui.screens.WorkoutRunningScreen
 import com.pjdev.trainflow.ui.screens.WorkoutSummaryScreen
-import com.pjdev.trainflow.ui.session.WorkoutRunningViewModel
+import com.pjdev.trainflow.presentation.WorkoutRunningViewModel
 
 @Composable
 fun TrainFlowApp(viewModel: TrainFlowViewModel) {
@@ -69,7 +69,9 @@ fun TrainFlowApp(viewModel: TrainFlowViewModel) {
         AppRoute.Home -> HomeScreen(
             day = dayBy(state.currentDayOfWeek),
             currentDayOfWeek = state.currentDayOfWeek,
-            onWeekPlanner = { route = AppRoute.WeekPlanner },
+            onWeekPlanner = {
+                route = AppRoute.WeekPlanner
+                            },
             onOpenWorkout = { dayOfWeek, workoutId ->
                 route = AppRoute.WorkoutPreview(dayOfWeek, workoutId)
             },
@@ -82,10 +84,10 @@ fun TrainFlowApp(viewModel: TrainFlowViewModel) {
             onEdit = { route = AppRoute.EditDay(it) },
             onOpenWorkout = { dayOfWeek ->
                 val workoutId = firstWorkoutIdOf(dayOfWeek)
-                if (workoutId != null) {
-                    route = AppRoute.WorkoutPreview(dayOfWeek, workoutId)
+                route = if (workoutId != null) {
+                    AppRoute.WorkoutPreview(dayOfWeek, workoutId)
                 } else {
-                    route = AppRoute.EditDay(dayOfWeek)
+                    AppRoute.EditDay(dayOfWeek)
                 }
             },
             onBack = { route = AppRoute.Home }

@@ -33,8 +33,6 @@ data class DayWorkout(
 
     fun totalExercises(): Int = workouts.sumOf { it.exercises.size }
 
-    fun primaryWorkoutName(): String =
-        workouts.firstOrNull()?.name.orEmpty()
 }
 
 data class WorkoutBlock(
@@ -69,13 +67,7 @@ data class Exercise(
     val workSeconds: Int,
     val restSeconds: Int,
     val trackingType: TrackingType
-) {
-    fun baseExerciseSeconds(): Int {
-        val totalWork = sets * workSeconds
-        val totalRest = if (sets > 1) (sets - 1) * restSeconds else 0
-        return totalWork + totalRest
-    }
-}
+)
 
 fun Int.secondsToHoursMinutes(): String {
     val totalSeconds = this.coerceAtLeast(0)
@@ -118,7 +110,7 @@ fun Int.toReadableDuration(): String {
 
     return when {
         hours > 0 -> "${hours}h ${minutes}m"
-        minutes > 0 -> if (seconds == 0) "${minutes} min" else "${minutes}m ${seconds}s"
+        minutes > 0 -> if (seconds == 0) "$minutes min" else "${minutes}m ${seconds}s"
         else -> "${seconds}s"
     }
 }

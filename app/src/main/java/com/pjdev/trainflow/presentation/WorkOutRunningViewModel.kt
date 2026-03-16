@@ -1,4 +1,4 @@
-package com.pjdev.trainflow.ui.session
+package com.pjdev.trainflow.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

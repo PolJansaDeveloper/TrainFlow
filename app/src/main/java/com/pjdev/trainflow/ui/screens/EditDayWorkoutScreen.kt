@@ -1,6 +1,6 @@
 package com.pjdev.trainflow.ui.screens
 
-import GradientBorderCard
+import com.pjdev.trainflow.ui.components.common.GradientBorderCard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Hotel
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -59,7 +58,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pjdev.trainflow.domain.model.DayWorkout
-import com.pjdev.trainflow.domain.model.Exercise
 import com.pjdev.trainflow.domain.model.WorkoutBlock
 import com.pjdev.trainflow.domain.model.secondsToHoursMinutes
 import com.pjdev.trainflow.ui.components.common.EmptyStateCard
@@ -120,7 +118,6 @@ fun EditDayWorkoutScreen(
                 item {
                     EditDayHeader(
                         title = "Edit ${dayLabels[day.dayOfWeek - 1]}",
-                        subtitle = "Build one or more workouts for this day.",
                         onBack = onBack
                     )
                 }
@@ -195,7 +192,7 @@ fun EditDayWorkoutScreen(
 @Composable
 private fun EditDayHeader(
     title: String,
-    subtitle: String,
+    subtitle: String = "Build one or more workouts for this day.",
     onBack: () -> Unit
 ) {
     Row(

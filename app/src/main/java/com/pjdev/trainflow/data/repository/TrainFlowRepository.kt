@@ -36,7 +36,7 @@ class TrainFlowRepository(private val store: TrainFlowDataStore) {
             workouts = day.workouts.map { workout ->
                 if (workout.id == workoutId) {
                     workout.copy(
-                        name = if (workout.name.isBlank()) "Workout" else workout.name,
+                        name = workout.name.ifBlank { "Workout" },
                         exercises = workout.exercises
                             .filterNot { it.id == exercise.id } + exercise
                     )

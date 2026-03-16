@@ -11,7 +11,6 @@ import com.pjdev.trainflow.domain.model.TrackingType
 import com.pjdev.trainflow.domain.model.WeeklyPlan
 import com.pjdev.trainflow.domain.model.WorkoutBlock
 import com.pjdev.trainflow.domain.model.WorkoutSession
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -45,16 +44,10 @@ class TrainFlowViewModel(
         AppUiState()
     )
 
-    val activeWorkoutDay = MutableStateFlow<Int?>(null)
-
     init {
         viewModelScope.launch {
             repository.ensureSeeded()
         }
-    }
-
-    fun setActiveWorkoutDay(day: Int?) {
-        activeWorkoutDay.value = day
     }
 
     fun saveDay(day: DayWorkout) =

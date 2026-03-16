@@ -1,6 +1,6 @@
 package com.pjdev.trainflow.ui.components.planner
 
-import GradientBorderCard
+import com.pjdev.trainflow.ui.components.common.GradientBorderCard
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
