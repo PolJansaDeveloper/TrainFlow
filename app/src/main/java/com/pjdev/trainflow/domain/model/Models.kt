@@ -16,29 +16,42 @@ data class WeeklyPlan(
     val id: String = "default-plan",
     val name: String = "Weekly Plan",
     val days: List<DayWorkout> =
-        (1..7).map { DayWorkout(dayOfWeek = it, workoutName = "", isRestDay = true) }
+        (1..7).map { DayWorkout(dayOfWeek = it, isRestDay = true) }
 )
 
 data class DayWorkout(
     val dayOfWeek: Int,
-    val workoutName: String,
     val isRestDay: Boolean,
-    val exercises: List<Exercise> = emptyList()
+    val workouts: List<WorkoutBlock> = emptyList()
 ) {
     fun totalWorkoutSeconds(): Int {
         if (isRestDay) return 0
+        return workouts.sumOf { it.totalWorkoutSeconds() }
+    }
 
+    fun totalSets(): Int = workouts.sumOf { it.totalSets() }
+
+    fun totalExercises(): Int = workouts.sumOf { it.exercises.size }
+
+    fun primaryWorkoutName(): String =
+        workouts.firstOrNull()?.name.orEmpty()
+}
+
+data class WorkoutBlock(
+    val id: String,
+    val name: String,
+    val exercises: List<Exercise> = emptyList()
+) {
+    fun totalWorkoutSeconds(): Int {
         return exercises.mapIndexed { index, exercise ->
             val isLastExercise = index == exercises.lastIndex
 
             val totalWork = exercise.sets * exercise.workSeconds
-
             val restIntervals = if (isLastExercise) {
                 (exercise.sets - 1).coerceAtLeast(0)
             } else {
                 exercise.sets
             }
-
             val totalRest = restIntervals * exercise.restSeconds
 
             totalWork + totalRest
@@ -47,6 +60,7 @@ data class DayWorkout(
 
     fun totalSets(): Int = exercises.sumOf { it.sets }
 }
+
 data class Exercise(
     val id: String,
     val name: String,
@@ -64,12 +78,15 @@ data class Exercise(
 }
 
 fun Int.secondsToHoursMinutes(): String {
-    val hours = this / 3600
-    val minutes = (this % 3600) / 60
+    val totalSeconds = this.coerceAtLeast(0)
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
 
     return when {
         hours > 0 -> "${hours}h ${minutes}m"
-        else -> "${minutes}m"
+        minutes > 0 -> if (seconds > 0) "${minutes}m ${seconds}s" else "${minutes}m"
+        else -> "${seconds}s"
     }
 }
 

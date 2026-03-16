@@ -5,9 +5,12 @@ import com.pjdev.trainflow.domain.model.DayWorkout
 class WorkoutSessionEngine {
 
     fun start(day: DayWorkout, nowMillis: Long): WorkoutRuntimeSnapshot {
-        require(day.exercises.isNotEmpty()) { "Workout must contain at least one exercise" }
+        require(day.workouts.isNotEmpty()) { "Workout day must contain at least one workout" }
 
-        val firstExercise = day.exercises.first()
+        val workout = day.workouts.first()
+        require(workout.exercises.isNotEmpty()) { "Workout must contain at least one exercise" }
+
+        val firstExercise = workout.exercises.first()
 
         return WorkoutRuntimeSnapshot(
             day = day,
@@ -24,7 +27,9 @@ class WorkoutSessionEngine {
         snapshot: WorkoutRuntimeSnapshot,
         nowMillis: Long
     ): ActiveWorkoutState {
-        val exercise = snapshot.day.exercises[snapshot.currentExerciseIndex]
+        val workout = snapshot.day.workouts.first()
+        val exercises = workout.exercises
+        val exercise = exercises[snapshot.currentExerciseIndex]
 
         val elapsedPhaseSeconds =
             ((nowMillis - snapshot.phaseStartedAtMillis) / 1000L).toInt().coerceAtLeast(0)
@@ -39,15 +44,15 @@ class WorkoutSessionEngine {
         val nextExerciseName = when {
             snapshot.phase == WorkoutPhase.COMPLETED -> null
             !isLastSetOfExercise -> exercise.name
-            else -> snapshot.day.exercises.getOrNull(snapshot.currentExerciseIndex + 1)?.name
+            else -> exercises.getOrNull(snapshot.currentExerciseIndex + 1)?.name
         }
 
         return ActiveWorkoutState(
-            workoutName = snapshot.day.workoutName,
+            workoutName = workout.name,
             phase = snapshot.phase,
             currentExerciseIndex = snapshot.currentExerciseIndex,
             currentSetIndex = snapshot.currentSetIndex,
-            totalExercises = snapshot.day.exercises.size,
+            totalExercises = exercises.size,
             totalWorkoutElapsedSeconds = totalElapsedSeconds,
             phaseDurationSeconds = snapshot.phaseDurationSeconds,
             phaseRemainingSeconds = phaseRemainingSeconds,
@@ -70,9 +75,11 @@ class WorkoutSessionEngine {
     }
 
     fun advance(snapshot: WorkoutRuntimeSnapshot, nowMillis: Long): WorkoutRuntimeSnapshot {
-        val currentExercise = snapshot.day.exercises[snapshot.currentExerciseIndex]
+        val workout = snapshot.day.workouts.first()
+        val exercises = workout.exercises
+        val currentExercise = exercises[snapshot.currentExerciseIndex]
         val isLastSetOfExercise = snapshot.currentSetIndex >= currentExercise.sets - 1
-        val isLastExercise = snapshot.currentExerciseIndex >= snapshot.day.exercises.lastIndex
+        val isLastExercise = snapshot.currentExerciseIndex >= exercises.lastIndex
 
         return when (snapshot.phase) {
             WorkoutPhase.WORK -> {
@@ -99,7 +106,7 @@ class WorkoutSessionEngine {
 
                     else -> {
                         val nextExerciseIndex = snapshot.currentExerciseIndex + 1
-                        val nextExercise = snapshot.day.exercises[nextExerciseIndex]
+                        val nextExercise = exercises[nextExerciseIndex]
 
                         WorkoutRuntimeSnapshot(
                             day = snapshot.day,

@@ -41,6 +41,9 @@ fun WorkoutSummaryScreen(
     onSave: (List<ExerciseResult>) -> Unit,
     onBack: () -> Unit
 ) {
+    val workout = day.workouts.firstOrNull()
+    val exercises = workout?.exercises.orEmpty()
+
     val valueMap = remember { mutableStateMapOf<String, String>() }
     val secondaryMap = remember { mutableStateMapOf<String, String>() }
     val notes = remember { mutableStateMapOf<String, String>() }
@@ -69,13 +72,13 @@ fun WorkoutSummaryScreen(
 
                 item {
                     GradientInfoCard(
-                        title = day.workoutName.ifBlank { "Workout" },
-                        subtitle = "${day.exercises.size} exercises completed",
+                        title = workout?.name?.ifBlank { "Workout" } ?: "Workout",
+                        subtitle = "${exercises.size} exercises completed",
                         value = "Save your session"
                     )
                 }
 
-                items(day.exercises, key = { it.id }) { ex ->
+                items(exercises, key = { it.id }) { ex ->
                     ElevatedCard(
                         modifier = Modifier.fillMaxWidth(),
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
@@ -88,14 +91,14 @@ fun WorkoutSummaryScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                ex.name,
+                                text = ex.name,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Text(
-                                "Tracking: ${ex.trackingType.key}",
+                                text = "Tracking: ${trackingTypeLabel(ex.trackingType)}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -177,7 +180,7 @@ fun WorkoutSummaryScreen(
                     Button(
                         onClick = {
                             onSave(
-                                day.exercises.map { ex ->
+                                exercises.map { ex ->
                                     ExerciseResult(
                                         exerciseName = ex.name,
                                         trackingType = ex.trackingType,
@@ -193,12 +196,24 @@ fun WorkoutSummaryScreen(
                             .height(56.dp),
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp)
                     ) {
-                        Text("Save workout", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = "Save workout",
+                            style = MaterialTheme.typography.titleMedium
+                        )
                     }
                 }
 
                 item { Spacer(modifier = Modifier.height(8.dp)) }
             }
         }
+    }
+}
+
+private fun trackingTypeLabel(type: TrackingType): String {
+    return when (type) {
+        TrackingType.WeightReps -> "Weight + reps"
+        TrackingType.RepsOnly -> "Reps only"
+        TrackingType.TimeOnly -> "Time only"
+        TrackingType.NoteOnly -> "Notes only"
     }
 }

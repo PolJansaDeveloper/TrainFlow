@@ -30,7 +30,7 @@ fun HomeScreen(
     day: DayWorkout,
     currentDayOfWeek: Int,
     onWeekPlanner: () -> Unit,
-    onOpenWorkout: (Int) -> Unit,
+    onOpenWorkout: (Int, String) -> Unit,
     onHistory: () -> Unit,
     onSettings: () -> Unit
 ) {

@@ -6,6 +6,7 @@ import com.pjdev.trainflow.domain.model.Exercise
 import com.pjdev.trainflow.domain.model.ExerciseResult
 import com.pjdev.trainflow.domain.model.Settings
 import com.pjdev.trainflow.domain.model.WeeklyPlan
+import com.pjdev.trainflow.domain.model.WorkoutBlock
 import com.pjdev.trainflow.domain.model.WorkoutSession
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -27,19 +28,43 @@ class TrainFlowRepository(private val store: TrainFlowDataStore) {
 
     suspend fun getDay(dayOfWeek: Int): DayWorkout = weeklyPlanFlow.first().days.first { it.dayOfWeek == dayOfWeek }
 
-    suspend fun saveExercise(dayOfWeek: Int, exercise: Exercise) {
+    suspend fun saveExercise(dayOfWeek: Int, workoutId: String, exercise: Exercise) {
         val day = getDay(dayOfWeek)
-        val updated = day.copy(
+
+        val updatedDay = day.copy(
             isRestDay = false,
-            exercises = day.exercises.filterNot { it.id == exercise.id } + exercise,
-            workoutName = if (day.workoutName.isBlank()) "Workout" else day.workoutName
+            workouts = day.workouts.map { workout ->
+                if (workout.id == workoutId) {
+                    workout.copy(
+                        name = if (workout.name.isBlank()) "Workout" else workout.name,
+                        exercises = workout.exercises
+                            .filterNot { it.id == exercise.id } + exercise
+                    )
+                } else {
+                    workout
+                }
+            }
         )
-        saveDay(updated)
+
+        saveDay(updatedDay)
     }
 
-    suspend fun deleteExercise(dayOfWeek: Int, exerciseId: String) {
+    suspend fun deleteExercise(dayOfWeek: Int, workoutId: String, exerciseId: String) {
         val day = getDay(dayOfWeek)
-        saveDay(day.copy(exercises = day.exercises.filterNot { it.id == exerciseId }))
+
+        val updatedDay = day.copy(
+            workouts = day.workouts.map { workout ->
+                if (workout.id == workoutId) {
+                    workout.copy(
+                        exercises = workout.exercises.filterNot { it.id == exerciseId }
+                    )
+                } else {
+                    workout
+                }
+            }
+        )
+
+        saveDay(updatedDay)
     }
 
     suspend fun createSession(dayOfWeek: Int?, workoutName: String, results: List<ExerciseResult>) {
@@ -71,5 +96,44 @@ class TrainFlowRepository(private val store: TrainFlowDataStore) {
                 vibrationEnabled = vibrationEnabled ?: current.vibrationEnabled
             )
         }
+    }
+    suspend fun addWorkout(dayOfWeek: Int, workout: WorkoutBlock) {
+        val day = getDay(dayOfWeek)
+
+        val updatedDay = day.copy(
+            isRestDay = false,
+            workouts = day.workouts + workout
+        )
+
+        saveDay(updatedDay)
+    }
+
+    suspend fun updateWorkoutName(dayOfWeek: Int, workoutId: String, name: String) {
+        val day = getDay(dayOfWeek)
+
+        val updatedDay = day.copy(
+            workouts = day.workouts.map { workout ->
+                if (workout.id == workoutId) {
+                    workout.copy(name = name.ifBlank { "Workout" })
+                } else {
+                    workout
+                }
+            }
+        )
+
+        saveDay(updatedDay)
+    }
+
+    suspend fun deleteWorkout(dayOfWeek: Int, workoutId: String) {
+        val day = getDay(dayOfWeek)
+
+        val updatedWorkouts = day.workouts.filterNot { it.id == workoutId }
+
+        val updatedDay = day.copy(
+            workouts = updatedWorkouts,
+            isRestDay = updatedWorkouts.isEmpty()
+        )
+
+        saveDay(updatedDay)
     }
 }

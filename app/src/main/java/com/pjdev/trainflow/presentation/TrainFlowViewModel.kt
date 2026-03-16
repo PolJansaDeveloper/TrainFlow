@@ -9,6 +9,7 @@ import com.pjdev.trainflow.domain.model.ExerciseResult
 import com.pjdev.trainflow.domain.model.Settings
 import com.pjdev.trainflow.domain.model.TrackingType
 import com.pjdev.trainflow.domain.model.WeeklyPlan
+import com.pjdev.trainflow.domain.model.WorkoutBlock
 import com.pjdev.trainflow.domain.model.WorkoutSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -61,16 +62,36 @@ class TrainFlowViewModel(
             repository.saveDay(day)
         }
 
-    fun deleteExercise(dayOfWeek: Int, exerciseId: String) =
+    fun addWorkout(dayOfWeek: Int) =
         viewModelScope.launch {
-            repository.deleteExercise(dayOfWeek, exerciseId)
+            repository.addWorkout(
+                dayOfWeek = dayOfWeek,
+                workout = WorkoutBlock(
+                    id = UUID.randomUUID().toString(),
+                    name = "Workout",
+                    exercises = emptyList()
+                )
+            )
         }
 
-    /**
-     * Crear o editar ejercicio
-     */
+    fun updateWorkoutName(dayOfWeek: Int, workoutId: String, name: String) =
+        viewModelScope.launch {
+            repository.updateWorkoutName(dayOfWeek, workoutId, name)
+        }
+
+    fun deleteWorkout(dayOfWeek: Int, workoutId: String) =
+        viewModelScope.launch {
+            repository.deleteWorkout(dayOfWeek, workoutId)
+        }
+
+    fun deleteExercise(dayOfWeek: Int, workoutId: String, exerciseId: String) =
+        viewModelScope.launch {
+            repository.deleteExercise(dayOfWeek, workoutId, exerciseId)
+        }
+
     fun saveExercise(
         dayOfWeek: Int,
+        workoutId: String,
         existingId: String?,
         name: String,
         sets: Int,
@@ -79,10 +100,10 @@ class TrainFlowViewModel(
         restSeconds: Int,
         trackingType: TrackingType
     ) = viewModelScope.launch {
-
         repository.saveExercise(
-            dayOfWeek,
-            Exercise(
+            dayOfWeek = dayOfWeek,
+            workoutId = workoutId,
+            exercise = Exercise(
                 id = existingId ?: UUID.randomUUID().toString(),
                 name = name,
                 sets = sets,

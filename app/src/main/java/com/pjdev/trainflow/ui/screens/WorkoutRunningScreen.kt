@@ -89,7 +89,7 @@ fun WorkoutRunningScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 WorkoutSessionTopBar(
-                    title = day.workoutName.ifBlank { "Workout" },
+                    title = uiState.workoutName.ifBlank { "Workout" },
                     elapsed = formatWorkoutElapsed(uiState.totalWorkoutElapsedSeconds),
                     onBack = onBack
                 )

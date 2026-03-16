@@ -12,6 +12,11 @@ fun StartWorkoutDialog(
     onDismiss: () -> Unit,
     onStart: () -> Unit
 ) {
+    val workout = day.workouts.firstOrNull()
+    val workoutName = workout?.name ?: "Workout"
+    val exerciseCount = workout?.exercises?.size ?: 0
+    val totalSets = workout?.exercises?.sumOf { it.sets } ?: 0
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -19,7 +24,7 @@ fun StartWorkoutDialog(
         },
         text = {
             Text(
-                "${day.workoutName}\n${day.exercises.size} exercises · ${day.exercises.sumOf { it.sets }} total sets"
+                "$workoutName\n$exerciseCount exercises · $totalSets total sets"
             )
         },
         confirmButton = {

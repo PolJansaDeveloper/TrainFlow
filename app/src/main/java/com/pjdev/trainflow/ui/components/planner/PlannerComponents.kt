@@ -210,12 +210,15 @@ fun PlannerDayCard(
     } else {
         workoutAccentColor()
     }
+
     val borderBrush = Brush.linearGradient(
         colors = listOf(
             MaterialTheme.colorScheme.secondary,
             MaterialTheme.colorScheme.primary
         )
     )
+
+    val primaryWorkout = day.workouts.firstOrNull()
 
     GradientBorderCard(
         modifier = Modifier.fillMaxWidth(),
@@ -248,14 +251,18 @@ fun PlannerDayCard(
                     )
 
                     Text(
-                        text = if (day.isRestDay) "Rest day" else day.workoutName.ifBlank { "Workout" },
+                        text = if (day.isRestDay) {
+                            "Rest day"
+                        } else {
+                            primaryWorkout?.name?.ifBlank { "Workout" } ?: "Workout"
+                        },
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     if (!day.isRestDay) {
                         Text(
-                            text = "${day.exercises.size} exercises planned",
+                            text = "${day.workouts.size} workouts • ${day.totalExercises()} exercises",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -269,7 +276,7 @@ fun PlannerDayCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                if (!day.isRestDay) {
+                if (!day.isRestDay && day.workouts.isNotEmpty()) {
                     Button(
                         onClick = onOpenWorkout,
                         modifier = Modifier.weight(1f),
@@ -289,7 +296,7 @@ fun PlannerDayCard(
                     shape = RoundedCornerShape(16.dp),
                     border = BorderStroke(1.dp, borderBrush)
                 ) {
-                        Text("Edit training")
+                    Text("Edit training")
                 }
             }
         }

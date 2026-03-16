@@ -6,7 +6,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pjdev.trainflow.domain.model.DayWorkout
+import com.pjdev.trainflow.domain.model.Exercise
+import com.pjdev.trainflow.domain.model.WorkoutBlock
 import com.pjdev.trainflow.presentation.TrainFlowViewModel
 import com.pjdev.trainflow.ui.screens.EditDayWorkoutScreen
 import com.pjdev.trainflow.ui.screens.ExerciseEditorScreen
@@ -17,9 +20,6 @@ import com.pjdev.trainflow.ui.screens.WeekPlannerScreen
 import com.pjdev.trainflow.ui.screens.WorkoutRunningScreen
 import com.pjdev.trainflow.ui.screens.WorkoutSummaryScreen
 import com.pjdev.trainflow.ui.session.WorkoutRunningViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-
-
 
 @Composable
 fun TrainFlowApp(viewModel: TrainFlowViewModel) {
@@ -28,14 +28,51 @@ fun TrainFlowApp(viewModel: TrainFlowViewModel) {
 
     fun dayBy(dayOfWeek: Int): DayWorkout =
         state.plan.days.firstOrNull { it.dayOfWeek == dayOfWeek }
-            ?: DayWorkout(dayOfWeek, "", true)
+            ?: DayWorkout(
+                dayOfWeek = dayOfWeek,
+                isRestDay = true
+            )
+
+    fun workoutBy(dayOfWeek: Int, workoutId: String): WorkoutBlock? =
+        dayBy(dayOfWeek).workouts.firstOrNull { it.id == workoutId }
+
+    fun exerciseBy(dayOfWeek: Int, workoutId: String, exerciseId: String?): Exercise? =
+        if (exerciseId == null) {
+            null
+        } else {
+            workoutBy(dayOfWeek, workoutId)
+                ?.exercises
+                ?.firstOrNull { it.id == exerciseId }
+        }
+
+    fun firstWorkoutIdOf(dayOfWeek: Int): String? =
+        dayBy(dayOfWeek).workouts.firstOrNull()?.id
+
+    fun selectedWorkoutDay(dayOfWeek: Int, workoutId: String): DayWorkout {
+        val day = dayBy(dayOfWeek)
+        val workout = workoutBy(dayOfWeek, workoutId)
+
+        return if (workout != null) {
+            day.copy(
+                isRestDay = false,
+                workouts = listOf(workout)
+            )
+        } else {
+            day.copy(
+                isRestDay = true,
+                workouts = emptyList()
+            )
+        }
+    }
 
     when (val current = route) {
         AppRoute.Home -> HomeScreen(
             day = dayBy(state.currentDayOfWeek),
             currentDayOfWeek = state.currentDayOfWeek,
             onWeekPlanner = { route = AppRoute.WeekPlanner },
-            onOpenWorkout = { day -> route = AppRoute.WorkoutPreview(day) },
+            onOpenWorkout = { dayOfWeek, workoutId ->
+                route = AppRoute.WorkoutPreview(dayOfWeek, workoutId)
+            },
             onHistory = { route = AppRoute.History },
             onSettings = { route = AppRoute.Settings }
         )
@@ -43,68 +80,115 @@ fun TrainFlowApp(viewModel: TrainFlowViewModel) {
         AppRoute.WeekPlanner -> WeekPlannerScreen(
             days = state.plan.days,
             onEdit = { route = AppRoute.EditDay(it) },
-            onOpenWorkout = { route = AppRoute.WorkoutPreview(it) },
+            onOpenWorkout = { dayOfWeek ->
+                val workoutId = firstWorkoutIdOf(dayOfWeek)
+                if (workoutId != null) {
+                    route = AppRoute.WorkoutPreview(dayOfWeek, workoutId)
+                } else {
+                    route = AppRoute.EditDay(dayOfWeek)
+                }
+            },
             onBack = { route = AppRoute.Home }
         )
 
         is AppRoute.EditDay -> EditDayWorkoutScreen(
             day = dayBy(current.dayOfWeek),
+
+            // esta screen debe aceptar ya estos callbacks nuevos
             onSave = {
                 viewModel.saveDay(it)
                 route = AppRoute.WeekPlanner
             },
-            onEditExercise = { route = AppRoute.EditExercise(current.dayOfWeek, it) },
-            onDeleteExercise = { viewModel.deleteExercise(current.dayOfWeek, it) },
+            onAddWorkout = {
+                viewModel.addWorkout(current.dayOfWeek)
+            },
+            onUpdateWorkoutName = { workoutId, name ->
+                viewModel.updateWorkoutName(current.dayOfWeek, workoutId, name)
+            },
+            onDeleteWorkout = { workoutId ->
+                viewModel.deleteWorkout(current.dayOfWeek, workoutId)
+            },
+            onEditExercise = { workoutId, exerciseId ->
+                route = AppRoute.EditExercise(
+                    dayOfWeek = current.dayOfWeek,
+                    workoutId = workoutId,
+                    exerciseId = exerciseId
+                )
+            },
+            onDeleteExercise = { workoutId, exerciseId ->
+                viewModel.deleteExercise(
+                    dayOfWeek = current.dayOfWeek,
+                    workoutId = workoutId,
+                    exerciseId = exerciseId
+                )
+            },
             onBack = { route = AppRoute.WeekPlanner }
         )
 
         is AppRoute.EditExercise -> ExerciseEditorScreen(
-            exercise = dayBy(current.dayOfWeek).exercises.firstOrNull { it.id == current.exerciseId },
+            exercise = exerciseBy(
+                dayOfWeek = current.dayOfWeek,
+                workoutId = current.workoutId,
+                exerciseId = current.exerciseId
+            ),
             onSave = { name, sets, reps, work, rest, tracking ->
                 viewModel.saveExercise(
-                    current.dayOfWeek,
-                    current.exerciseId,
-                    name,
-                    sets,
-                    reps,
-                    work,
-                    rest,
-                    tracking
+                    dayOfWeek = current.dayOfWeek,
+                    workoutId = current.workoutId,
+                    existingId = current.exerciseId,
+                    name = name,
+                    sets = sets,
+                    repsTarget = reps,
+                    workSeconds = work,
+                    restSeconds = rest,
+                    trackingType = tracking
                 )
                 route = AppRoute.EditDay(current.dayOfWeek)
             },
             onBack = { route = AppRoute.EditDay(current.dayOfWeek) }
         )
-
         is AppRoute.WorkoutPreview -> {
-            val workoutViewModel: WorkoutRunningViewModel = viewModel()
+            val workoutViewModel: WorkoutRunningViewModel =
+                viewModel(key = "workout-${current.dayOfWeek}-${current.workoutId}")
             val uiState by workoutViewModel.uiState.collectAsState()
 
+            val selectedDay = selectedWorkoutDay(current.dayOfWeek, current.workoutId)
+
             WorkoutRunningScreen(
-                day = dayBy(current.dayOfWeek),
+                day = selectedDay,
                 uiState = uiState,
                 onStartWorkout = {
-                    workoutViewModel.startWorkout(dayBy(current.dayOfWeek))
+                    workoutViewModel.startWorkout(selectedDay)
                 },
                 onFinishWorkout = {
                     workoutViewModel.finishWorkout()
-                    route = AppRoute.WorkoutSummary(current.dayOfWeek)
+                    route = AppRoute.WorkoutSummary(
+                        dayOfWeek = current.dayOfWeek,
+                        workoutId = current.workoutId
+                    )
                 },
                 onBack = { route = AppRoute.WeekPlanner }
             )
         }
 
         is AppRoute.WorkoutSummary -> WorkoutSummaryScreen(
-            day = dayBy(current.dayOfWeek),
-            onSave = {
+            day = selectedWorkoutDay(current.dayOfWeek, current.workoutId),
+            onSave = { results ->
+                val workoutName = workoutBy(current.dayOfWeek, current.workoutId)?.name ?: "Workout"
+
                 viewModel.saveSession(
-                    current.dayOfWeek,
-                    dayBy(current.dayOfWeek).workoutName,
-                    it
+                    dayOfWeek = current.dayOfWeek,
+                    workoutName = workoutName,
+                    results = results
                 )
                 route = AppRoute.History
             },
-            onBack = { route = AppRoute.WorkoutPreview(current.dayOfWeek) }
+            onBack = {
+                route = AppRoute.WorkoutPreview(
+                    dayOfWeek = current.dayOfWeek,
+                    workoutId = current.workoutId
+                )
+            }
         )
 
         AppRoute.History -> HistoryScreen(

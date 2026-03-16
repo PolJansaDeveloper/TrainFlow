@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Spa
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -29,6 +30,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,8 +48,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pjdev.trainflow.domain.model.DayWorkout
+import com.pjdev.trainflow.domain.model.WorkoutBlock
 import com.pjdev.trainflow.domain.model.toReadableDuration
-
 
 @Composable
 fun HomeHeader(
@@ -60,7 +65,6 @@ fun HomeHeader(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.weight(1f)
         ) {
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -161,9 +165,9 @@ private fun TopActionIcon(
 fun TodayWorkoutCard(
     day: DayWorkout,
     currentDayOfWeek: Int,
-    onOpenWorkout: (Int) -> Unit
+    onOpenWorkout: (Int, String) -> Unit
 ) {
-    if (day.isRestDay) {
+    if (day.isRestDay || day.workouts.isEmpty()) {
         RestDayCard()
     } else {
         ActiveWorkoutCard(
@@ -178,8 +182,25 @@ fun TodayWorkoutCard(
 private fun ActiveWorkoutCard(
     day: DayWorkout,
     currentDayOfWeek: Int,
-    onOpenWorkout: (Int) -> Unit
+    onOpenWorkout: (Int, String) -> Unit
 ) {
+    var showWorkoutPicker by remember { mutableStateOf(false) }
+
+    val workoutCount = day.workouts.size
+    val primaryWorkout = day.workouts.firstOrNull()
+
+    val headline = when {
+        workoutCount <= 1 -> primaryWorkout?.name?.ifBlank { "Workout" } ?: "Workout"
+        else -> "$workoutCount workouts planned"
+    }
+
+    val supportingText = when {
+        workoutCount <= 1 -> "Today's workout"
+        else -> day.workouts.joinToString(" • ") { it.name.ifBlank { "Workout" } }
+    }
+
+    val buttonText = if (workoutCount <= 1) "Start workout" else "Choose workout"
+
     val gradient = Brush.linearGradient(
         colors = listOf(
             MaterialTheme.colorScheme.secondary,
@@ -187,6 +208,17 @@ private fun ActiveWorkoutCard(
         )
     )
     val onGradient = MaterialTheme.colorScheme.onPrimary
+
+    if (showWorkoutPicker) {
+        WorkoutPickerDialog(
+            workouts = day.workouts,
+            onDismiss = { showWorkoutPicker = false },
+            onSelect = { workout ->
+                showWorkoutPicker = false
+                onOpenWorkout(currentDayOfWeek, workout.id)
+            }
+        )
+    }
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -216,23 +248,32 @@ private fun ActiveWorkoutCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.LocalFireDepartment,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = onGradient
                     )
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        text = "Today's workout",
+                        text = if (workoutCount <= 1) "Today's workout" else "Today's workouts",
                         style = MaterialTheme.typography.titleSmall,
                         color = onGradient.copy(alpha = 0.92f)
                     )
 
                     Text(
-                        text = day.workoutName.ifBlank { "Workout" },
+                        text = headline,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.ExtraBold,
                         color = onGradient
                     )
+
+                    if (workoutCount > 1) {
+                        Text(
+                            text = supportingText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = onGradient.copy(alpha = 0.9f)
+                        )
+                    }
                 }
             }
 
@@ -240,7 +281,13 @@ private fun ActiveWorkoutCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(
-                    onClick = { onOpenWorkout(currentDayOfWeek) },
+                    onClick = {
+                        if (workoutCount == 1 && primaryWorkout != null) {
+                            onOpenWorkout(currentDayOfWeek, primaryWorkout.id)
+                        } else {
+                            showWorkoutPicker = true
+                        }
+                    },
                     shape = RoundedCornerShape(21.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
@@ -251,7 +298,7 @@ private fun ActiveWorkoutCard(
                         .height(54.dp)
                 ) {
                     Text(
-                        text = "Start workout",
+                        text = buttonText,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.ExtraBold,
                             brush = Brush.linearGradient(
@@ -266,6 +313,42 @@ private fun ActiveWorkoutCard(
             }
         }
     }
+}
+
+@Composable
+private fun WorkoutPickerDialog(
+    workouts: List<WorkoutBlock>,
+    onDismiss: () -> Unit,
+    onSelect: (WorkoutBlock) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Choose workout")
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                workouts.forEach { workout ->
+                    FilledTonalButton(
+                        onClick = { onSelect(workout) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Text(
+                            text = workout.name.ifBlank { "Workout" },
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable
@@ -334,9 +417,8 @@ private fun RestDayCard() {
 
 @Composable
 fun QuickStatsRow(day: DayWorkout) {
-
-    val exercises = if (day.isRestDay) 0 else day.exercises.size
-    val sets = if (day.isRestDay) 0 else day.exercises.sumOf { it.sets }
+    val exercises = if (day.isRestDay) 0 else day.totalExercises()
+    val sets = if (day.isRestDay) 0 else day.totalSets()
 
     val duration = if (day.isRestDay) {
         "Rest day"
@@ -347,12 +429,10 @@ fun QuickStatsRow(day: DayWorkout) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             StatCard(
                 modifier = Modifier.weight(1f),
                 value = exercises.toString(),
@@ -419,6 +499,7 @@ fun PlannerButton(
 ) {
     val color1 = MaterialTheme.colorScheme.primary
     val color2 = MaterialTheme.colorScheme.tertiary
+
     GradientBorderCard(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -441,9 +522,7 @@ fun PlannerButton(
                     .graphicsLayer(alpha = 0.99f)
                     .drawWithCache {
                         val brush = Brush.linearGradient(
-                            colors = listOf(
-                                color2,color1
-                            )
+                            colors = listOf(color2, color1)
                         )
 
                         onDrawWithContent {
@@ -456,13 +535,15 @@ fun PlannerButton(
                     },
                 tint = Color.White
             )
+
             Spacer(modifier = Modifier.size(10.dp))
+
             Text(
                 text = "Open weekly planner",
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    )
+                    fontWeight = FontWeight.Bold
                 )
+            )
         }
     }
 }
