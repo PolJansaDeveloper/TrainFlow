@@ -27,12 +27,26 @@ data class DayWorkout(
 ) {
     fun totalWorkoutSeconds(): Int {
         if (isRestDay) return 0
-        return exercises.sumOf { it.totalExerciseSeconds() }
+
+        return exercises.mapIndexed { index, exercise ->
+            val isLastExercise = index == exercises.lastIndex
+
+            val totalWork = exercise.sets * exercise.workSeconds
+
+            val restIntervals = if (isLastExercise) {
+                (exercise.sets - 1).coerceAtLeast(0)
+            } else {
+                exercise.sets
+            }
+
+            val totalRest = restIntervals * exercise.restSeconds
+
+            totalWork + totalRest
+        }.sum()
     }
 
     fun totalSets(): Int = exercises.sumOf { it.sets }
 }
-
 data class Exercise(
     val id: String,
     val name: String,
@@ -42,12 +56,13 @@ data class Exercise(
     val restSeconds: Int,
     val trackingType: TrackingType
 ) {
-    fun totalExerciseSeconds(): Int {
+    fun baseExerciseSeconds(): Int {
         val totalWork = sets * workSeconds
         val totalRest = if (sets > 1) (sets - 1) * restSeconds else 0
         return totalWork + totalRest
     }
 }
+
 fun Int.secondsToHoursMinutes(): String {
     val hours = this / 3600
     val minutes = (this % 3600) / 60

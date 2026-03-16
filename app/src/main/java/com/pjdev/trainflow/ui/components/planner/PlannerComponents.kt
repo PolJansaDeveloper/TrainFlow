@@ -17,8 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -36,10 +34,9 @@ import androidx.compose.ui.unit.dp
 import com.pjdev.trainflow.domain.model.DayWorkout
 import com.pjdev.trainflow.domain.model.secondsToHoursMinutes
 import com.pjdev.trainflow.ui.components.common.dayLabels
-import com.pjdev.trainflow.ui.components.common.infoGradient
 
 @Composable
-private fun restAccentColor() = MaterialTheme.colorScheme.outline
+private fun restAccentColor() = Color.Green.copy(alpha = 0.4f)
 
 @Composable
 private fun workoutAccentColor() = MaterialTheme.colorScheme.tertiary
@@ -115,8 +112,8 @@ fun PlannerHeader(
 fun WeeklySummaryCard(days: List<DayWorkout>) {
     val trainingDays = days.count { !it.isRestDay }
     val restDays = days.count { it.isRestDay }
-    val totalExercises = days.filterNot { it.isRestDay }.sumOf { it.totalWorkoutSeconds()}
-    val totalTrainingTime = totalExercises.secondsToHoursMinutes()
+    val totalTrainingSeconds = days.filterNot { it.isRestDay }.sumOf { it.totalWorkoutSeconds() }
+    val totalTrainingTime = totalTrainingSeconds.secondsToHoursMinutes()
     val gradient = Brush.linearGradient(
         colors = listOf(
             MaterialTheme.colorScheme.secondary,
@@ -188,13 +185,16 @@ private fun SummaryMiniCard(
             text = value,
             style = MaterialTheme.typography.titleLarge,
             color = onPrimary,
-            fontWeight = FontWeight.ExtraBold
+            fontWeight = FontWeight.ExtraBold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = onPrimary.copy(alpha = 0.9f),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

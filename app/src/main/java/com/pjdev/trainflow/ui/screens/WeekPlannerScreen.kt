@@ -44,7 +44,7 @@ fun WeekPlannerScreen(
                 item {
                     PlannerHeader(
                         onBack = onBack,
-                        title = "Week PLanner",
+                        title = "Week Planner",
                         subtitle = "Organize your training week and keep every session under control."
                     )
                 }
