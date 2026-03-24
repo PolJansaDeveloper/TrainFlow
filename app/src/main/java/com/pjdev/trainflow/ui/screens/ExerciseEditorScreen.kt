@@ -1,6 +1,5 @@
 package com.pjdev.trainflow.ui.screens
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,8 +59,6 @@ fun ExerciseEditorScreen(
     var work by remember(exercise) { mutableStateOf((exercise?.workSeconds ?: 40).toString()) }
     var rest by remember(exercise) { mutableStateOf((exercise?.restSeconds ?: 60).toString()) }
     var tracking by remember(exercise) { mutableStateOf(exercise?.trackingType ?: TrackingType.RepsOnly) }
-
-    BackHandler(onBack = onBack)
 
     Box(modifier = Modifier.fillMaxSize()) {
         HomeBackground()

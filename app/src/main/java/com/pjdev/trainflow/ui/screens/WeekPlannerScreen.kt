@@ -37,7 +37,7 @@ fun WeekPlannerScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .padding(horizontal = 20.dp, vertical = 36.dp)
                     .navigationBarsPadding(),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
@@ -45,7 +45,7 @@ fun WeekPlannerScreen(
                     PlannerHeader(
                         onBack = onBack,
                         title = "Week Planner",
-                        subtitle = "Organize your training week and keep every session under control."
+                        subtitle = "Organize your training week."
                     )
                 }
 

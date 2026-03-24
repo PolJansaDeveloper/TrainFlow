@@ -6,6 +6,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.pjdev.trainflow.domain.model.DayWorkout
 
+import androidx.compose.ui.window.DialogProperties
+
 @Composable
 fun StartWorkoutDialog(
     day: DayWorkout,
@@ -18,7 +20,13 @@ fun StartWorkoutDialog(
     val totalSets = workout?.exercises?.sumOf { it.sets } ?: 0
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            // Bloqueado: no cerrar al tocar fuera ni con botón atrás
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        ),
         title = {
             Text("Ready to start?")
         },

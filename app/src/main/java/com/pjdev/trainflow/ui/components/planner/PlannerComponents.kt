@@ -1,7 +1,6 @@
 package com.pjdev.trainflow.ui.components.planner
 
 import com.pjdev.trainflow.ui.components.common.GradientBorderCard
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -36,10 +35,10 @@ import com.pjdev.trainflow.domain.model.secondsToHoursMinutes
 import com.pjdev.trainflow.ui.components.common.dayLabels
 
 @Composable
-private fun restAccentColor() = Color.Green.copy(alpha = 0.4f)
+private fun restAccentColor() = Color.Green.copy(alpha = 0.18f)
 
 @Composable
-private fun workoutAccentColor() = MaterialTheme.colorScheme.tertiary
+private fun workoutAccentColor() = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.18f)
 
 @Composable
 private fun restChipBackground() = Color.Green.copy(alpha = 0.4f)
@@ -61,8 +60,6 @@ fun PlannerHeader(
     modifier: Modifier = Modifier,
     subtitle: String? = null
 ) {
-    BackHandler(onBack = onBack)
-
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -116,9 +113,10 @@ fun WeeklySummaryCard(days: List<DayWorkout>) {
     val totalTrainingTime = totalTrainingSeconds.secondsToHoursMinutes()
     val gradient = Brush.linearGradient(
         colors = listOf(
-            MaterialTheme.colorScheme.secondary,
-            MaterialTheme.colorScheme.primary
-        ))
+            Color(0xFF030303),
+            Color(0xFF959291)
+        )
+    )
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -128,15 +126,16 @@ fun WeeklySummaryCard(days: List<DayWorkout>) {
     ) {
         Column(
             modifier = Modifier
-                .background(gradient)
                 .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(30.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+
         ) {
             Text(
                 text = "Your weekly overview",
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold
             )
 
@@ -171,12 +170,12 @@ private fun SummaryMiniCard(
     value: String,
     label: String
 ) {
-    val onPrimary = MaterialTheme.colorScheme.onPrimary
+    val onPrimary = MaterialTheme.colorScheme.onSurface
 
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(18.dp))
-            .background(onPrimary.copy(alpha = 0.14f))
+            .background(onPrimary.copy(alpha = 0.25f))
             .padding(vertical = 14.dp, horizontal = 10.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         Alignment.CenterHorizontally
@@ -282,7 +281,7 @@ fun PlannerDayCard(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         )
                     ) {

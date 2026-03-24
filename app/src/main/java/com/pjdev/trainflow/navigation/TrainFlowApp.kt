@@ -1,5 +1,6 @@
 package com.pjdev.trainflow.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -66,90 +67,113 @@ fun TrainFlowApp(viewModel: TrainFlowViewModel) {
     }
 
     when (val current = route) {
-        AppRoute.Home -> HomeScreen(
-            day = dayBy(state.currentDayOfWeek),
-            currentDayOfWeek = state.currentDayOfWeek,
-            onWeekPlanner = {
+        AppRoute.Home -> {
+            HomeScreen(
+                day = dayBy(state.currentDayOfWeek),
+                currentDayOfWeek = state.currentDayOfWeek,
+                onWeekPlanner = {
+                    route = AppRoute.WeekPlanner
+                },
+                onOpenWorkout = { dayOfWeek, workoutId ->
+                    route = AppRoute.WorkoutPreview(dayOfWeek, workoutId)
+                },
+                onHistory = { route = AppRoute.History },
+                onSettings = { route = AppRoute.Settings }
+            )
+        }
+
+        AppRoute.WeekPlanner -> {
+            BackHandler {
+                route = AppRoute.Home
+            }
+
+            WeekPlannerScreen(
+                days = state.plan.days,
+                onEdit = { route = AppRoute.EditDay(it) },
+                onOpenWorkout = { dayOfWeek ->
+                    val workoutId = firstWorkoutIdOf(dayOfWeek)
+                    route = if (workoutId != null) {
+                        AppRoute.WorkoutPreview(dayOfWeek, workoutId)
+                    } else {
+                        AppRoute.EditDay(dayOfWeek)
+                    }
+                },
+                onBack = { route = AppRoute.Home }
+            )
+        }
+
+        is AppRoute.EditDay -> {
+            BackHandler {
                 route = AppRoute.WeekPlanner
-                            },
-            onOpenWorkout = { dayOfWeek, workoutId ->
-                route = AppRoute.WorkoutPreview(dayOfWeek, workoutId)
-            },
-            onHistory = { route = AppRoute.History },
-            onSettings = { route = AppRoute.Settings }
-        )
+            }
 
-        AppRoute.WeekPlanner -> WeekPlannerScreen(
-            days = state.plan.days,
-            onEdit = { route = AppRoute.EditDay(it) },
-            onOpenWorkout = { dayOfWeek ->
-                val workoutId = firstWorkoutIdOf(dayOfWeek)
-                route = if (workoutId != null) {
-                    AppRoute.WorkoutPreview(dayOfWeek, workoutId)
-                } else {
-                    AppRoute.EditDay(dayOfWeek)
-                }
-            },
-            onBack = { route = AppRoute.Home }
-        )
+            EditDayWorkoutScreen(
+                day = dayBy(current.dayOfWeek),
+                onSave = {
+                    viewModel.saveDay(it)
+                    route = AppRoute.WeekPlanner
+                },
+                onAddWorkout = {
+                    viewModel.addWorkout(current.dayOfWeek)
+                },
+                onUpdateWorkoutName = { workoutId, name ->
+                    viewModel.updateWorkoutName(current.dayOfWeek, workoutId, name)
+                },
+                onDeleteWorkout = { workoutId ->
+                    viewModel.deleteWorkout(current.dayOfWeek, workoutId)
+                },
+                onEditExercise = { workoutId, exerciseId ->
+                    route = AppRoute.EditExercise(
+                        dayOfWeek = current.dayOfWeek,
+                        workoutId = workoutId,
+                        exerciseId = exerciseId
+                    )
+                },
+                onDeleteExercise = { workoutId, exerciseId ->
+                    viewModel.deleteExercise(
+                        dayOfWeek = current.dayOfWeek,
+                        workoutId = workoutId,
+                        exerciseId = exerciseId
+                    )
+                },
+                onBack = { route = AppRoute.WeekPlanner }
+            )
+        }
 
-        is AppRoute.EditDay -> EditDayWorkoutScreen(
-            day = dayBy(current.dayOfWeek),
+        is AppRoute.EditExercise -> {
+            BackHandler {
+                route = AppRoute.EditDay(current.dayOfWeek)
+            }
 
-            // esta screen debe aceptar ya estos callbacks nuevos
-            onSave = {
-                viewModel.saveDay(it)
-                route = AppRoute.WeekPlanner
-            },
-            onAddWorkout = {
-                viewModel.addWorkout(current.dayOfWeek)
-            },
-            onUpdateWorkoutName = { workoutId, name ->
-                viewModel.updateWorkoutName(current.dayOfWeek, workoutId, name)
-            },
-            onDeleteWorkout = { workoutId ->
-                viewModel.deleteWorkout(current.dayOfWeek, workoutId)
-            },
-            onEditExercise = { workoutId, exerciseId ->
-                route = AppRoute.EditExercise(
-                    dayOfWeek = current.dayOfWeek,
-                    workoutId = workoutId,
-                    exerciseId = exerciseId
-                )
-            },
-            onDeleteExercise = { workoutId, exerciseId ->
-                viewModel.deleteExercise(
-                    dayOfWeek = current.dayOfWeek,
-                    workoutId = workoutId,
-                    exerciseId = exerciseId
-                )
-            },
-            onBack = { route = AppRoute.WeekPlanner }
-        )
-
-        is AppRoute.EditExercise -> ExerciseEditorScreen(
-            exercise = exerciseBy(
-                dayOfWeek = current.dayOfWeek,
-                workoutId = current.workoutId,
-                exerciseId = current.exerciseId
-            ),
-            onSave = { name, sets, reps, work, rest, tracking ->
-                viewModel.saveExercise(
+            ExerciseEditorScreen(
+                exercise = exerciseBy(
                     dayOfWeek = current.dayOfWeek,
                     workoutId = current.workoutId,
-                    existingId = current.exerciseId,
-                    name = name,
-                    sets = sets,
-                    repsTarget = reps,
-                    workSeconds = work,
-                    restSeconds = rest,
-                    trackingType = tracking
-                )
-                route = AppRoute.EditDay(current.dayOfWeek)
-            },
-            onBack = { route = AppRoute.EditDay(current.dayOfWeek) }
-        )
+                    exerciseId = current.exerciseId
+                ),
+                onSave = { name, sets, reps, work, rest, tracking ->
+                    viewModel.saveExercise(
+                        dayOfWeek = current.dayOfWeek,
+                        workoutId = current.workoutId,
+                        existingId = current.exerciseId,
+                        name = name,
+                        sets = sets,
+                        repsTarget = reps,
+                        workSeconds = work,
+                        restSeconds = rest,
+                        trackingType = tracking
+                    )
+                    route = AppRoute.EditDay(current.dayOfWeek)
+                },
+                onBack = { route = AppRoute.EditDay(current.dayOfWeek) }
+            )
+        }
+
         is AppRoute.WorkoutPreview -> {
+            BackHandler {
+                route = AppRoute.WeekPlanner
+            }
+
             val workoutViewModel: WorkoutRunningViewModel =
                 viewModel(key = "workout-${current.dayOfWeek}-${current.workoutId}")
             val uiState by workoutViewModel.uiState.collectAsState()
@@ -173,36 +197,57 @@ fun TrainFlowApp(viewModel: TrainFlowViewModel) {
             )
         }
 
-        is AppRoute.WorkoutSummary -> WorkoutSummaryScreen(
-            day = selectedWorkoutDay(current.dayOfWeek, current.workoutId),
-            onSave = { results ->
-                val workoutName = workoutBy(current.dayOfWeek, current.workoutId)?.name ?: "Workout"
-
-                viewModel.saveSession(
-                    dayOfWeek = current.dayOfWeek,
-                    workoutName = workoutName,
-                    results = results
-                )
-                route = AppRoute.History
-            },
-            onBack = {
+        is AppRoute.WorkoutSummary -> {
+            BackHandler {
                 route = AppRoute.WorkoutPreview(
                     dayOfWeek = current.dayOfWeek,
                     workoutId = current.workoutId
                 )
             }
-        )
 
-        AppRoute.History -> HistoryScreen(
-            sessions = state.sessions,
-            onBack = { route = AppRoute.Home }
-        )
+            WorkoutSummaryScreen(
+                day = selectedWorkoutDay(current.dayOfWeek, current.workoutId),
+                onSave = { results ->
+                    val workoutName = workoutBy(current.dayOfWeek, current.workoutId)?.name ?: "Workout"
 
-        AppRoute.Settings -> SettingsScreen(
-            settings = state.settings,
-            onSoundChange = viewModel::updateSound,
-            onVibrationChange = viewModel::updateVibration,
-            onBack = { route = AppRoute.Home }
-        )
+                    viewModel.saveSession(
+                        dayOfWeek = current.dayOfWeek,
+                        workoutName = workoutName,
+                        results = results
+                    )
+                    route = AppRoute.History
+                },
+                onBack = {
+                    route = AppRoute.WorkoutPreview(
+                        dayOfWeek = current.dayOfWeek,
+                        workoutId = current.workoutId
+                    )
+                }
+            )
+        }
+
+        AppRoute.History -> {
+            BackHandler {
+                route = AppRoute.Home
+            }
+
+            HistoryScreen(
+                sessions = state.sessions,
+                onBack = { route = AppRoute.Home }
+            )
+        }
+
+        AppRoute.Settings -> {
+            BackHandler {
+                route = AppRoute.Home
+            }
+
+            SettingsScreen(
+                settings = state.settings,
+                onSoundChange = viewModel::updateSound,
+                onVibrationChange = viewModel::updateVibration,
+                onBack = { route = AppRoute.Home }
+            )
+        }
     }
 }

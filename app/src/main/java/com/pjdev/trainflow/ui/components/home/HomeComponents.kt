@@ -3,6 +3,7 @@ package com.pjdev.trainflow.ui.components.home
 import com.pjdev.trainflow.ui.components.common.GradientBorderCard
 import com.pjdev.trainflow.R
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,111 +51,115 @@ import androidx.compose.ui.unit.sp
 import com.pjdev.trainflow.domain.model.DayWorkout
 import com.pjdev.trainflow.domain.model.WorkoutBlock
 import com.pjdev.trainflow.domain.model.toReadableDuration
+import com.pjdev.trainflow.ui.theme.RestDayBorderEnd
+import com.pjdev.trainflow.ui.theme.RestDayBorderStart
+import androidx.compose.material.icons.filled.FitnessCenter
+
+
 
 @Composable
 fun HomeHeader(
+    isRestDay: Boolean,
     onHistory: () -> Unit,
     onSettings: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.Top
     ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.weight(1f)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    painter = painterResource(R.drawable.trainflow_nike_minimal_brutal_fire_dumbbell),
-                    contentDescription = null,
-                    tint = Color.Unspecified
-                )
-
-                Text(
-                    text = "TrainFlow",
-                    letterSpacing = 0.5.sp,
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        fontWeight = FontWeight.ExtraBold,
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.secondary,
-                                MaterialTheme.colorScheme.primary
-                            )
-                        )
-                    )
-                )
-            }
-        }
-
         Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TopActionIcon(
                 icon = Icons.Default.History,
                 contentDescription = "History",
-                onClick = onHistory
+                onClick = onHistory,
+                isRestDay = isRestDay
             )
 
             TopActionIcon(
                 icon = Icons.Default.Settings,
                 contentDescription = "Settings",
-                onClick = onSettings
+                onClick = onSettings,
+                isRestDay = isRestDay
             )
         }
     }
 }
 
+
+
+
+
 @Composable
 private fun TopActionIcon(
     icon: ImageVector,
     contentDescription: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isRestDay : Boolean
 ) {
-    val gradient = Brush.linearGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.secondary,
-            MaterialTheme.colorScheme.primary
-        )
-    )
+    val bgColor = MaterialTheme.colorScheme.surface
+
+
+    val innerColor = MaterialTheme.colorScheme.surfaceVariant
+
+
+    val borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+
 
     Surface(
-        modifier = Modifier.size(46.dp),
+        modifier = Modifier.size(48.dp),
         shape = CircleShape,
-        color = Color.Transparent,
-        tonalElevation = 4.dp,
-        shadowElevation = 6.dp,
+        color = bgColor,
+        tonalElevation = 2.dp,
+        shadowElevation = 8.dp,
         onClick = onClick
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = gradient,
+                .padding(3.dp)
+                .border(
+                    width = 1.5.dp,
+                    color = borderColor,
                     shape = CircleShape
-                )
-                .padding(2.dp),
+                ),
             contentAlignment = Alignment.Center
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
-                        color = MaterialTheme.colorScheme.surface,
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                innerColor,
+                                innerColor.copy(alpha = 0.6f)
+                            )
+                        ),
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
+
+                // 🔥 mini acento diagonal estilo "marca"
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .graphicsLayer {
+                            rotationZ = -20f
+                        }
+                        .background(if (isRestDay) RestDayBorderStart.copy(alpha = 0.3f) else
+                             MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                        )
+                )
+
                 Icon(
                     imageVector = icon,
                     contentDescription = contentDescription,
                     modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -277,7 +282,7 @@ private fun ActiveWorkoutCard(
             }
 
             GradientBorderCard(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Button(
                     onClick = {
@@ -358,7 +363,8 @@ private fun RestDayCard() {
     )
 
     GradientBorderCard(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        isRestDay = true
     ) {
         Column(
             modifier = Modifier
@@ -375,15 +381,20 @@ private fun RestDayCard() {
                         .size(48.dp)
                         .clip(CircleShape)
                         .background(
-                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.18f)
-                        ),
+                            RestDayBorderEnd
+                        )
+                        .border(
+                            width = 2.dp,
+                            color = RestDayBorderStart.copy(alpha = 0.6f),
+                            shape = CircleShape
+                ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Spa,
                         modifier = Modifier.size(22.dp),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary
+                        tint = RestDayBorderStart
                     )
                 }
 
@@ -433,20 +444,23 @@ fun QuickStatsRow(day: DayWorkout) {
             StatCard(
                 modifier = Modifier.weight(1f),
                 value = exercises.toString(),
-                label = "Exercises"
+                label = "Exercises",
+                isRestDay = day.isRestDay
             )
 
             StatCard(
                 modifier = Modifier.weight(1f),
                 value = sets.toString(),
-                label = "Sets"
+                label = "Sets",
+                isRestDay = day.isRestDay
             )
         }
 
         StatCard(
             modifier = Modifier.fillMaxWidth(),
             value = duration,
-            label = "Workout duration"
+            label = "Workout duration",
+            isRestDay = day.isRestDay
         )
     }
 }
@@ -455,10 +469,14 @@ fun QuickStatsRow(day: DayWorkout) {
 private fun StatCard(
     modifier: Modifier = Modifier,
     value: String,
-    label: String
+    label: String,
+    isRestDay : Boolean
 ) {
+    val color = if (isRestDay) RestDayBorderStart else MaterialTheme.colorScheme.secondary
     GradientBorderCard(
-        modifier = modifier
+        modifier = modifier,
+        isRestDay = isRestDay
+
     ) {
         Column(
             modifier = Modifier
@@ -471,34 +489,29 @@ private fun StatCard(
                 text = value,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = color
             )
 
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.tertiary
-                        )
-                    )
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            )
         }
     }
 }
 
 @Composable
 fun PlannerButton(
-    onWeekPlanner: () -> Unit
+    onWeekPlanner: () -> Unit,
+    isRestDay: Boolean
 ) {
-    val color1 = MaterialTheme.colorScheme.primary
-    val color2 = MaterialTheme.colorScheme.tertiary
+    val color1 = if (isRestDay) RestDayBorderStart else MaterialTheme.colorScheme.primary
+    val color2 = if (isRestDay) RestDayBorderEnd else MaterialTheme.colorScheme.tertiary
 
     GradientBorderCard(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        isRestDay = isRestDay
     ) {
         FilledTonalButton(
             onClick = onWeekPlanner,
@@ -537,9 +550,8 @@ fun PlannerButton(
 
             Text(
                 text = "Open weekly planner",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold
-                )
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

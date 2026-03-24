@@ -1,6 +1,5 @@
 package com.pjdev.trainflow.ui.screens
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -58,10 +57,6 @@ fun WorkoutRunningScreen(
     onBack: () -> Unit
 ) {
     var showStartDialog by rememberSaveable { mutableStateOf(true) }
-
-    BackHandler(enabled = !showStartDialog) {
-        onBack()
-    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         HomeBackground()

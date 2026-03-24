@@ -5,6 +5,9 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+val RestDayBorderStart = Color(0xFF9CCF9B)   // verde salvia suave
+val RestDayBorderEnd = Color(0xFFFFF6D6)     // blanco cálido con toque crema
+
 private val TrainFlowLightColors = lightColorScheme(
 
     primary = Color(0xFFE53935),            // rojo fuego principal

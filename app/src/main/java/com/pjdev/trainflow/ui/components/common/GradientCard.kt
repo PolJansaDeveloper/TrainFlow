@@ -13,21 +13,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.pjdev.trainflow.domain.model.DayWorkout
+import com.pjdev.trainflow.ui.theme.RestDayBorderEnd
+import com.pjdev.trainflow.ui.theme.RestDayBorderStart
 
 @Composable
 fun GradientBorderCard(
     modifier: Modifier = Modifier,
+    isRestDay: Boolean = false,
     content: @Composable () -> Unit
+
 ) {
     val shape = RoundedCornerShape(22.dp)
 
-    val borderBrush = Brush.linearGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.secondary,
-            MaterialTheme.colorScheme.primary
-        )
-    )
+    val borderBrush =
+        if (isRestDay) Brush.linearGradient(
+            colors = listOf(
+                RestDayBorderStart,
+                RestDayBorderEnd
+            )
+        ) else {
+            Brush.linearGradient(
+                colors = listOf(
+                    MaterialTheme.colorScheme.secondary,
+                    MaterialTheme.colorScheme.primary
+                )
+            )
+        }
 
     val glowBrush = Brush.linearGradient(
         colors = listOf(

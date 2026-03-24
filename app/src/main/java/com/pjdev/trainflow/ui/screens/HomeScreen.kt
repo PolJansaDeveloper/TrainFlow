@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -37,7 +38,7 @@ fun HomeScreen(
     val listState = rememberLazyListState()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        HomeBackground()
+        HomeBackground(isRestDay = day.isRestDay)
 
         Scaffold(
             containerColor = Color.Transparent
@@ -59,12 +60,13 @@ fun HomeScreen(
                 item {
                     HomeHeader(
                         onHistory = onHistory,
-                        onSettings = onSettings
+                        onSettings = onSettings,
+                        isRestDay = day.isRestDay
                     )
                 }
 
                 item {
-                    TodaySection(currentDayOfWeek = currentDayOfWeek)
+                    TodaySection(currentDayOfWeek = currentDayOfWeek, isRestDay = day.isRestDay)
                 }
 
                 item {
@@ -81,7 +83,8 @@ fun HomeScreen(
 
                 item {
                     PlannerButton(
-                        onWeekPlanner = onWeekPlanner
+                        onWeekPlanner = onWeekPlanner,
+                        day.isRestDay
                     )
                 }
             }
@@ -90,22 +93,23 @@ fun HomeScreen(
 }
 
 @Composable
-private fun TodaySection(currentDayOfWeek: Int) {
+private fun TodaySection(currentDayOfWeek: Int, isRestDay: Boolean = false)
+{
     Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Ready to train?",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        Text(
-            text = "${dayLabels[currentDayOfWeek - 1]} plan",
+            text = "${dayLabels[currentDayOfWeek - 1]} ",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.onBackground
+        )
+        Text(
+            text = if (isRestDay) "Take a breath" else "Ready to train?",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.SemiBold
         )
     }
 }

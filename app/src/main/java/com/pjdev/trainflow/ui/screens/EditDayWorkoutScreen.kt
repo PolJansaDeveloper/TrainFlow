@@ -84,7 +84,7 @@ fun EditDayWorkoutScreen(
     LaunchedEffect(day.workouts) {
         day.workouts.forEach { workout ->
             if (expandedStates[workout.id] == null) {
-                expandedStates[workout.id] = true
+                expandedStates[workout.id] = false
             }
         }
         val validIds = day.workouts.map { it.id }.toSet()
@@ -149,7 +149,7 @@ fun EditDayWorkoutScreen(
                     items(day.workouts, key = { it.id }) { workout ->
                         WorkoutBlockEditorCard(
                             workout = workout,
-                            expanded = expandedStates[workout.id] ?: true,
+                            expanded = expandedStates[workout.id] ?: false,
                             onToggleExpand = {
                                 expandedStates[workout.id] = !(expandedStates[workout.id] ?: true)
                             },
@@ -391,7 +391,8 @@ private fun RestModeCard() {
     )
 
     GradientBorderCard(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        isRestDay = true
     ) {
         Column(
             modifier = Modifier
